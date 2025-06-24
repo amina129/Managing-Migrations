@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 import requests
 import json
 from decimal import Decimal
@@ -12,7 +13,7 @@ class Transaction(models.Model):
     destination_currency = models.ForeignKey('Currency', on_delete=models.CASCADE, related_name='destination_currency')
     original_currency_value = models.DecimalField(max_digits=10, decimal_places=2)
     destination_currency_value = models.DecimalField(max_digits=10, decimal_places=2)
-    commission = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+    comission = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     exchange_date = models.DateTimeField(auto_now_add=True)
 
 class CurrencyHistory(models.Model):
@@ -32,3 +33,8 @@ class CurrencyHistory(models.Model):
         decimal_value = Decimal(usd_ask_value)  # Use Decimal imported from decimal
         return decimal_value
 
+class CurrencyBalance(models.Model):
+    currency = models.ForeignKey('Currency', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    share_porfolio = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(1)])
+    value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
