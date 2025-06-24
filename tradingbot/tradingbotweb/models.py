@@ -7,7 +7,11 @@ from decimal import Decimal
 class Currency(models.Model):
     symbol = models.CharField(max_length=10, primary_key=True)
     usd_value = models.DecimalField(max_digits=10, decimal_places=2, default=1.0)
-
+    def __str__(self)-> str:
+        return self.symbol
+    
+    
+    
 class Transaction(models.Model):
     origin_currency = models.ForeignKey('Currency', on_delete=models.CASCADE, related_name='origin_currency')
     destination_currency = models.ForeignKey('Currency', on_delete=models.CASCADE, related_name='destination_currency')
@@ -38,3 +42,17 @@ class CurrencyBalance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     share_porfolio = models.DecimalField(max_digits=5, decimal_places=2, default=0, validators=[MinValueValidator(0), MaxValueValidator(1)])
     value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    def __str__(self)-> str:
+        return f'{self.currency.symbol} {self.value} '
+    
+    
+class ExchangeGoal(models.Model):
+    origin_balance = models.ForeignKey('CurrencyBalance', on_delete=models.CASCADE, related_name='exchange_goal')
+    destination_currency = models.ForeignKey('Currency', on_delete=models.CASCADE, related_name='exchange_goal')
+    initial_value = models.DecimalField(max_digits=10, decimal_places=2)
+    threshold = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    executed_at = models.DateTimeField(null=True, blank=True)
+    completed = models.BooleanField(default=False)
+    Transaction = models.OneToOneField('Transaction', on_delete=models.CASCADE, null=True, blank=True)
+    
