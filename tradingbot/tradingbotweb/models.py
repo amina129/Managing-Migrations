@@ -44,7 +44,11 @@ class CurrencyBalance(models.Model):
     value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     def __str__(self)-> str:
         return f'{self.currency.symbol} {self.value} '
-    
+    @property
+    def usd_balance(self):
+        current_usd_rate = CurrencyHistory.objects.create(symbol=self.currency)
+        usd_rate = current_usd_rate.usd_value * self.value
+        return usd_rate
     
 class ExchangeGoal(models.Model):
     origin_balance = models.ForeignKey('CurrencyBalance', on_delete=models.CASCADE, related_name='exchange_goal')
@@ -56,3 +60,19 @@ class ExchangeGoal(models.Model):
     completed = models.BooleanField(default=False)
     Transaction = models.OneToOneField('Transaction', on_delete=models.CASCADE, null=True, blank=True)
     
+    @property
+    def percentage(self):
+      return self.threshold* 100
+  
+    @property
+    def increase(self):
+        return self.threshold* self.origin_balance.value
+    @property
+    def difference_initial_value(self):
+        return self.origin_balance.value - self.initial_value
+    
+    @property
+    def percentage_difference(self):
+        return (self.difference_initial_value / self.initial_value) * 100 
+
+
